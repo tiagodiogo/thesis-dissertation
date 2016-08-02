@@ -3,13 +3,13 @@
 \chapter{Related Work}
 \label{chapter:related_work}
 
-\subsection{Protocol Analysis and Selection}
+\section{Protocol Analysis and Selection}
 \label{sec:protocol_analysis}
 
 \paragraph{}
 There are many alternatives and some proposed standards when it comes to choosing a protocol stack for \gls{IoT} communications. The decision must be based on the particularities of the devices to be used and the objective of the application itself, however a thorough analysis of the existing solutions is a proper way to unveil the strong and weak points of each protocol providing a good basis for an informed decision. A recent survey (January 2015) \cite{Al-Fuqaha2015} of \gls{IoT} enabling technologies, protocols and applications was the starting point for the analysis to follow. The presentation of the available protocols and solutions will follow a bottom-up approach, starting from the data link and physical layer all the way up until the application layer. In particular, the session layer will be left to the end since securing the channel is an optional feature and will be addressed after the application level protocols are properly examined.
 
-\subsubsection{Data Link and Physical Layer}
+\subsection{Data Link and Physical Layer}
 
 \paragraph{}
 The first requirement for the physical layer of the \gls{IoT} is the use of wireless radios. These should aim for simplicity, low-power and low-cost communications. While wireless communication is widespread and can be found from homes to airports, the type of radio commonly used, known as Wi-Fi, uses a high amount of power causing concerns for battery life. In the next paragraphs, an overview of Wi-Fi (IEEE 802.11) is given with the objective of comparing it with the IEEE 802.15.4, a protocol that aims to address these issues.
@@ -26,7 +26,7 @@ IEEE 802.15.4 \cite{IEEEComputerSociety2011} on the other hand was created for \
 	Regarding performance, it would be unfair to directly compare the two, since IEEE 802.11 transmission power and receiver sensitivity are much greater than 802.15.4. Even if we limit both to a low power level, IEEE 802.11 still outperforms IEEE 802.15.4 in terms of packet delivery ratio, throughput, latency, jitter and average energy consumption. However this comes at the cost of a far lower transmission range \cite{Transmission2011}.
 	We can conclude that for typical \gls{LR-WPAN} network requirements, IEEE 802.15.4 is better designed to address the constrained environment issues, while IEEE 802.11 would still be a suitable option if a short transmission range is not a problem.
 
-\subsubsection{Network Layer}
+\subsection{Network Layer}
 \label{sec:network_layer}
 
 \paragraph{\textbf{6LoWPAN}}
@@ -45,7 +45,7 @@ With the use of 6LoWPAN, upper layer routing protocols can now use the IPv6 addr
   \label{fig:rpl_dodag}
 \end{figure}
 
-\subsubsection{Application Layer}
+\subsection{Application Layer}
 
 \paragraph{\textbf{\gls{HTTP}}}
 \paragraph{}
@@ -87,7 +87,7 @@ Subscribers register their interest for a specific topic and then get informed b
 \paragraph{}
 	In order to address the drawbacks on constrained devices, \gls{MQTT-SN} protocol \cite{Ibm2013} was created. Among the improvements and new features, \gls{MQTT-SN} runs on UDP, adds broker support for indexing topic names, provides a discovery procedure to help clients without a pre-configured server address and supports devices in sleep state. With this approach, an extra gateway is necessary to convert from \gls{MQTT-SN} to \gls{MQTT} so the communications can be understood by the broker.
 
-\subsubsection{Session Layer}
+\subsection{Session Layer}
 
 \paragraph{}
 So far, security issues have not been addressed in any of the previous layers. This is because security is an expensive, optional feature. The application layer protocols rely on underneath layers to achieve secure communications, and network layer protocols assume that if security is necessary then it has already been handled in upper layer protocols. In fact, the session layer is where the security mechanisms are implemented and provides an abstraction layer to application layer protocols. These mechanisms work on top of the transport layer and aim to provide authentication, confidentiality and message integrity.
@@ -149,7 +149,7 @@ So far, security issues have not been addressed in any of the previous layers. T
 	\end{tabular}
 \end{table}
 
-\subsection{Attack Analysis, Detection and Mitigation}
+\section{Attack Analysis, Detection and Mitigation}
 \label{sec:attack_analysis}
 \paragraph{}
 Exploitation of existing solutions in the forms of malicious attacks can be found at all the studied OSI layers. They can go from a physical intruder replacing some node on a sensor field to the well-known \gls{DoS} at the application layer. However, given the characteristics of the devices and networks used in \gls{IoT} combined with the power consumption focus of this work, a specific kind of attacks performed at the network layer is of special interest and importance: battery depletion attacks, also known as, ``vampire'' attacks.
@@ -157,7 +157,7 @@ Exploitation of existing solutions in the forms of malicious attacks can be foun
 \paragraph{}
 Battery depletion attacks aim at draining the battery, ``life'', of the network devices, working over time to entirely disable a network, hence being called ``vampire'' attacks. These attacks do not focus on flooding the network with many packages, instead they drain the node's life by delaying the packets transmission. Many of the existing attacks are not protocol specific \cite{Vasserman2013}, while others target specific protocols and implementations \cite{Pongle2015}. The following attacks aim at giving an overview of the existing attack possibilities on different routing solutions as well as existing mitigation strategies. Additionally, a range of attacks that target the RPL routing protocol is also analysed. Since RPL is the selected protocol of our energy efficient stack, it is of special importance to consider and assure the mitigation of attacks that would drain the device's batteries by exploiting this light weight protocol's inner workings.   
 
-\subsubsection{Stateless Protocols}
+\subsection{Stateless Protocols}
 \label{sec:source_routing}
 \paragraph{}
 In systems that use this type of routing protocols, the source node specifies the entire route to the destination in the packet header. This means that intermediaries do not make decisions regarding the next hop, they only forward to the next node as specified in the original path therefore reducing the amount of computation performed and used energy. However, the source node must ensure that the route is valid at the time of sending and that the neighbour relations among the devices allow the specified forwarding path. Using this transmission scheme, a malicious device can specify paths through the network that are far from optimal, wasting energy at the intermediate nodes who follow the included malicious source route. The Carousel and Stretch Attacks are examples of these attacks.
@@ -188,7 +188,7 @@ The objective of this attack is to create a source route around the network, lon
 
 A limited way of mitigating this attack would be to ensure that path routes have less than the total number of devices on the network. Vasserman and Hoper proposed a property called ``no-backtracking'' that assures the packet is always moving closer to the sink on every hop \cite{Vasserman2013}.
 \pagebreak
-\subsubsection{Stateful Protocols}
+\subsection{Stateful Protocols}
 \label{sec:tables_routing}
 \paragraph{}
 In systems that use this type of routing protocols, network nodes are aware of the network topology and its state, being able to make local decisions on the node to whom they will forward the packet. The effect of the Vampires on this type of routing is limited since the route is built dynamically from many independent forwarding decisions. However, attackers can still cause damage by forcing packet forwarding through nodes that would not be on the optimal path, for example, by forwarding the packet back to the source. The Directional Antenna and Wormhole Attacks are examples of these attacks.
@@ -220,7 +220,7 @@ This attack can be seen as variation of the Directional Antenna Attack but with 
 Wormhole attacks can be prevented using the Merkle tree authentication \cite{Khan2013}. This tree is organized from the leafs towards the root where every parent knows their children and asks them for authentication based on their ID and public key.
 \pagebreak
 
-\subsubsection{RPL Specific Attacks}
+\subsection{RPL Specific Attacks}
 \paragraph{} 
 
 
@@ -232,7 +232,7 @@ In a selective forwarding attack, a malicious node can launch a \gls{DoS} attack
 \paragraph{}
 The Hello in the name of this attack comes from the initial message a node sends when joining a network. By broadcasting this message with a strong signal power, an attacker can try to introduce himself as neighbour to many nodes of the network, or at least force a large portion of the network to spend energy starting the message exchange for node insertion. A simple solution for this attack would be to test the bi-directionality of the link. If no acknowledgement is received, the path is discarded. Another approach, if geographical locations of the nodes are known, would be to discard every hello message coming from a location beyond the transmission capabilities of ordinary nodes.
 
-\subsubsection{Protocol Independent Attacks}
+\subsection{Protocol Independent Attacks}
 \paragraph{}
 The last addressed category is not dependant on network topologies or protocol messages. It focuses on attacks that can be performed regardless of the used protocol and whose goal is to obtain information about a network device. With that information an attacker can, for example, try to include himself in the network as a legitimate device or spoof his identity to forward traffic towards him. The Clone and Sybil Attacks are examples of these attacks.
 
@@ -249,29 +249,29 @@ As the name suggests, in a clone ID attack, the attacker steals the identity of 
 
 Proposed mitigation strategies for this type of attacks consist on keeping track of the number of instances of each identity. By using the node neighbours, either a centralized or distributed approach could be used to detect duplicate entries.
 
-\subsection{Secure Bootstrapping}
+\section{Secure Bootstrapping}
 \label{sec:secure_bootstrapping}
 \paragraph{}
 The term bootstrapping is applied to the process in which a new device is connected to an existing network. To achieve a secure bootstrapping, a unique identity and security parameters are associated with the device during this phase. There are several ways to carry out the initial setup, either via a physical interface or wirelessly. In the case of wireless bootstrapping, attention must be given to eavesdropping so that the secure credentials cannot be intercepted.\\
 Since many of the studied attacks are to be performed by a malicious intruder capable of interacting with the network, if we could assure a secure bootstrapping, meaning that the new node would be authenticated before becoming an active member of the network, a large portion of those attacks could no longer be performed. The following bootstrapping techniques were summarized in \cite{Fischer2012} and aim at providing secure bootstrapping for \gls{IoT} devices.
 
-\subsubsection{Token-Based}
+\subsection{Token-Based}
 \paragraph{}
 In token-based distribution, device specific security credentials are generated and written to a token. That token can range from memory sticks or flash cards to \gls{RFID} tags or smartcards. Is has the advantage that this initial credential generation can be performed on a physically controlled environment and only later, on the commissioning phase, is the token plugged into the device. After the successful insertion of the security credentials, the token can be removed and collected back into the secure environment. This process can be considered of high security since the credentials are generated on a closed environment and are transmitted through a physical link. To further increase the security level, a password could be used to encrypt the credentials, however, that would require the device to have some kind of interface that would allow to input the password. In the case of a large number of devices, this approach would be unsuitable due to the management effort of manually deploying the tokens to the devices \cite{Fischer2012}.
 
-\subsubsection{Identifier-Based Access Control List}
+\subsection{Identifier-Based Access Control List}
 \paragraph{}
 With an identifier based \gls{ACL}, new devices are allowed or denied access to the network based on their unique ID. A commonly used identifier is the MAC address. This has some major drawbacks in security since, firstly, it provides no assurances on the first time the device connects to the network. An attacker can easily intercept the first messages and get access to the device information. And secondly, after the bootstrapping phase, MAC addresses can be spoofed by an attacker, allowing him access to the network by bypassing the \gls{ACL} with the identifier of a legitimate node.
 
-\subsubsection{One-Time-Passwords}
+\subsection{One-Time-Passwords}
 \paragraph{}
 The use of one-time-passwords enhances the manual input of credentials on the device to be bootstrapped. The person responsible for the deployment of the new node should receive through a secure channel an one-time-password, that would then be used to authenticate the node, by authenticating its locally generated key material. This material can be either a certificate request to a \gls{CA} or a locally generated public/private key pair. The achieved security level is proportional to the security of the channel used to obtain the one time password, but assuming that channel is secure, so is this method. The drawback is that it forces devices to possess some kind of interface to insert the one time password.
 
-\subsubsection{Manufacturer Installed Credentials}
+\subsection{Manufacturer Installed Credentials}
 \paragraph{}
 So far, excluding the identifier based access control list, the intent of the studied techniques is to supply to the new device the security credentials needed to obtain access to the network, or at least provide an authentication method that allows fetching those credentials. In manufacturer installed credentials, those security credentials are deployed during the manufacturing process of the device vendor. Those credentials are typically a public/private key pair certificate bound to the identifier of the device. This certificate can be integrated into the initial loading of the firmware or stored in a separate integrated circuit designed for credential storing. In the second case, this method's security can be considered very high since those integrated circuits assure that the private key cannot be read from memory. This way, the new device comes shipped with the necessary security credentials not only for the bootstrapping phase but also for the normal operation phase since it does not need to fetch any additional credentials. The effort is on the root or management station that needs to import the vendor \gls{CA} certificates to assure the new device credentials are trustworthy. Also the production costs increase, implying an increased device cost.
 
-\subsubsection{Recently Proposed Solutions}
+\subsection{Recently Proposed Solutions}
 \paragraph{}
 Secure bootstrapping and network admission solutions have already been proposed in past literature. However, the development and optimization of application layer protocols as well as network layer routing schemes allows for new approaches and solutions that can now fit the nature of \gls{IoT} devices.
 Bergman et al. \cite{Bergmann2012} proposed a three-phase secure bootstrapping technique for nodes in a \gls{CoAP} network. Firstly the joining node broadcasts a request for a \gls{CSDS}. This server, once contacted by a new node takes the responsibility of key distribution. Then the system goes under a vulnerable phase where the secret is transmitted from the \gls{CSDS} onto the new device. The author's proposes a short audible or visual feedback to the human installer when the secret is received and assumes that potential eavesdroppers can not intercept this transmission. Finally, this secret is used to setup the \gls{DTLS} connection. This approach has major security drawbacks. On the secret transmission phase, so the authors propose limiting the radio power to a low level and disable data forwarding beyond the local network segment, but these techniques cannot assure that an attacker won't be able to intercept the transmission.\\
