@@ -103,15 +103,63 @@ As shown in the sequence diagram the process is started by the new device that a
 \section{Implementation}
 
 
+\subsection{garlicstrap}
+Previously presented bootstrapping methods had the draw-
+backs of either requiring additional hardware during the
+commissioning phase, the need to fetch additional creden-
+tials after starting the operation phase, or even relying on
+third party entities to provide those security credentials.
+Given the characteristics of our target infrastructures, in
+which there is a need for a management station capable of
+interpreting data coming from the constrained network, the
+rationale for designing this bootstrapping scheme was to ad-
+dress all these drawbacks at once with an additional infras-
+tructure component, the bootstrapper. By uploading the
+necessary security credentials – the “garlic” – through the
+use of the bootstrapper component, new nodes would start
+the operation phase with all the security credentials required
+for secure communications. Besides the bootstrapper, only
+a key store for the network credentials is required as addi-
+tional infrastructure components. More in depth, the secu-
+rity credential provided to the joining nodes is a 128bit key,
+used for the Advanced Encryption Standard (AES) [5] in
+Counter with CBC-MAC (CCM) star mode [3]. This allows
+packets to have their payload encrypted and the message
+authenticated with a Message Integrity Code (MIC) also
+computed from the AES-128 key. This assures that all the
+packets flowing through the network, even the joining node
+first communications, are confidential and authentic. This
+way, attackers are not able to join the network topology
+therefore frustrating all attempts to conduct battery deple-
+tion attacks. Since the infrastructure administrators are not
+required and possibly unaware of this process, bootstrapping
+needs to be performed in an automated way, preferably to-
+gether with an already existing task. The chosen approach
+was to upload the security credentials during the firmware
+uploading of the joining nodes, through the use of an user in-
+terface where the operator simply needs to select the type of
+hardware being commissioned and all the required tasks run
+in the background. These involve creating an unique identi-
+fier for the joining node, fetching the AES-128 key from the
+key store, storing it in the node firmware and finally upload
+the new firmware containing the security credential to the
+new device. A sequence diagram of the full process can be
+seen in Figure 4.
 
 \subsection{Network Devices}
 
-
+wedowepdn
+wepidnwepid
 
 \subsection{Backend Services}
 
+
+wepinwe
+wepdinwepid
 \section{Execution}
 
+weojndweod
+wepidnweoid
 
 \section{Limitations and Future Work}
 \paragraph{}
