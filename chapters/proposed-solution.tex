@@ -102,51 +102,93 @@ As shown in the sequence diagram the process is started by the new device that a
 
 \section{Implementation}
 
-
-\subsection{garlicstrap}
-Previously presented bootstrapping methods had the draw-
-backs of either requiring additional hardware during the
-commissioning phase, the need to fetch additional creden-
-tials after starting the operation phase, or even relying on
-third party entities to provide those security credentials.
-Given the characteristics of our target infrastructures, in
-which there is a need for a management station capable of
-interpreting data coming from the constrained network, the
-rationale for designing this bootstrapping scheme was to ad-
-dress all these drawbacks at once with an additional infras-
-tructure component, the bootstrapper. By uploading the
-necessary security credentials – the “garlic” – through the
-use of the bootstrapper component, new nodes would start
-the operation phase with all the security credentials required
-for secure communications. Besides the bootstrapper, only
-a key store for the network credentials is required as addi-
-tional infrastructure components. More in depth, the secu-
-rity credential provided to the joining nodes is a 128bit key,
-used for the Advanced Encryption Standard (AES) [5] in
-Counter with CBC-MAC (CCM) star mode [3]. This allows
-packets to have their payload encrypted and the message
-authenticated with a Message Integrity Code (MIC) also
-computed from the AES-128 key. This assures that all the
-packets flowing through the network, even the joining node
-first communications, are confidential and authentic. This
-way, attackers are not able to join the network topology
-therefore frustrating all attempts to conduct battery deple-
-tion attacks. Since the infrastructure administrators are not
-required and possibly unaware of this process, bootstrapping
-needs to be performed in an automated way, preferably to-
-gether with an already existing task. The chosen approach
-was to upload the security credentials during the firmware
-uploading of the joining nodes, through the use of an user in-
-terface where the operator simply needs to select the type of
-hardware being commissioned and all the required tasks run
-in the background. These involve creating an unique identi-
-fier for the joining node, fetching the AES-128 key from the
-key store, storing it in the node firmware and finally upload
-the new firmware containing the security credential to the
-new device. A sequence diagram of the full process can be
-seen in Figure 4.
-
 \subsection{Network Devices}
+
+\paragraph{\textbf{Operative System}}
+\paragraph{}
+The greatest planning challenge involved in deploying the network devices was connecting all the proposed protocol at the different layers together. To achieve this, several operative systems for constrained devices were examined attempting to understand how they worked and what features did they offer. The operative systems under comparison were Contiki-OS\footnote{http://www.contiki-os.org/}, TinyOS\footnote{http://tinyos.stanford.edu/tinyos-wiki/index.php/FAQ} and RIOT-OS\footnote{https://riot-os.org/}\\
+After examination of the source code repositories, wiki pages and community mailing lists, we could understand that RIOT is the newest and more ambitious, attempting real time processing and claiming to support "all relevant open standards" for the \gls{IoT} but still in a starting phase and lacking complete implementations of some protocols and still working on developing drivers for the most recent hardware platforms. Regarding TinyOS, it follows a less ambitious approach, presenting itself as a work scheduler with a collection of drivers for micro-controllers. Unfortunately, it appears to have stopped in time, with the latest release being dated August 2012 and not supporting the latest hardware boards. Contiki-OS on the other hand claims to be a "powerfull box for building complex wireless systems". According to the documentation it supports all the protocols required and has recently published drivers for the most recent hardware platforms. It also ships with a network simulator, allegedly allowing to construct a virtual network that accurately mimics a real deployment on hardware. The combination of these factors led to the choosing of Contiki-OS as the operative systems for our network nodes. Figure \ref{fig:stack_operative_system} acts as a reminder of the attempted protocol stack, alongside with the selected operative system.\\
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.3\linewidth]{figures/Stack.pdf}
+  \caption{Protocol Stack and Operative System}
+  \label{fig:stack_operative_system}
+\end{figure}
+
+With respect to the Contiki-OS internal structure, the operative system has been divided by category folders at the root level, similar to what can be found on a regular Linux distribution. The most relevant and that required greatest attention and understanding for this work are presented as follows:
+
+\begin{itemize}
+	\item \textbf{apps} - in this folder lies the code for applications, like telnet, ping, mqtt and our desired application layer protocol - \gls{CoAP};
+	\item \textbf{core/net} - in this folder, the code responsible for networking is found, particularly our desired network layer protocol - RPL. IPv6 and link layer security are also implemented;
+	\item \textbf{platform} - in this folder we can find the drivers for the supported platforms;
+	\item \textbf{examples} - in this folder, simple working examples of many apps can be found, including \gls{CoAP};
+	\item \textbf{tools} - in this folder we find non-essential apps that can help if we want for example to measure resource consumptions on real hardware.
+\end{itemize}
+
+\paragraph{\textbf{Application Layer}}
+\paragraph{}
+
+Although applications should now come out-of-the-box with the selected operative system, \gls{CoAP} configuration and the creation of the application endpoints that will be accessed by the network clients on the management station needs to be done by the developer. These endpoints also increase in complexity when accessing specific hardware like humidity and temperature sensors, or when we want observable resources, where when a change occurs an event is triggered that will notify all the resource observers. In our work, we wanted to imprint on the devices an unique identifier, therefore needing to implement a simple text resource, and also make use of the hardware capabilities to create a live network, resorting to the sensors included on hardware. This implied the creation of endpoints capable of interacting with hardware devices and configuring those endpoints to be observable by the \gls{CoAP} clients. The following snippets present an overview of what is required for creating advanced \gls{CoAP} endpoints.\\
+Firstly, 
+
+\begin{lstlisting}
+
+PERIODIC_RESOURCE(res_temperature,
+         "title=\"Temperature\";rt=\"Temperature\";obs",
+         res_get_handler,
+         NULL,
+         NULL,
+         NULL,
+         CLOCK_SECOND,
+         res_periodic_handler);
+
+static void
+res_get_handler(void *request, void *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
+{
+  /*
+   * For minimal complexity, request query and options should be ignored for GET on observable resources.
+   * Otherwise the requests must be stored with the observer list and passed by REST.notify_subscribers().
+   * This would be a TODO in the corresponding files in contiki/apps/erbium/!
+   */
+
+  int temperature = temperature_sensor.value(0);
+
+  unsigned int accept = -1;
+  REST.get_header_accept(request, &accept);
+
+  if(accept == -1 || accept == REST.type.TEXT_PLAIN) {
+    REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
+    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "%d", temperature);
+
+    REST.set_response_payload(response, (uint8_t *)buffer, strlen((char *)buffer));
+  } else if(accept == REST.type.APPLICATION_JSON) {
+    REST.set_header_content_type(response, REST.type.APPLICATION_JSON);
+    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "{'temperature':%d}", temperature);
+
+    REST.set_response_payload(response, buffer, strlen((char *)buffer));
+  } else {
+    REST.set_response_status(response, REST.status.NOT_ACCEPTABLE);
+    const char *msg = "Supporting content-types text/plain and application/json";
+    REST.set_response_payload(response, msg, strlen(msg));
+  }
+
+  REST.set_header_max_age(response, MAX_AGE);
+
+  /* The REST.subscription_handler() will be called for observable resources by the REST framework. */
+}
+\end{lstlisting}
+
+\paragraph{\textbf{Session Layer}}
+\paragraph{}
+
+\paragraph{\textbf{Network Layer}}
+\paragraph{}
+
+
+
+\subsection{Border Router}
+
 
 wedowepdn
 wepidnwepid
