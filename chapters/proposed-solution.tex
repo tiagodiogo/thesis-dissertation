@@ -107,7 +107,7 @@ As shown in the sequence diagram the process is started by the new device that a
 \paragraph{\textbf{Operative System}}
 \paragraph{}
 The greatest planning challenge involved in deploying the network devices was connecting all the proposed protocol at the different layers together. To achieve this, several operative systems for constrained devices were examined attempting to understand how they worked and what features did they offer. The operative systems under comparison were Contiki-OS\footnote{http://www.contiki-os.org/}, TinyOS\footnote{http://tinyos.stanford.edu/tinyos-wiki/index.php/FAQ} and RIOT-OS\footnote{https://riot-os.org/}\\
-After examination of the source code repositories, wiki pages and community mailing lists, we could understand that RIOT is the newest and more ambitious, attempting real time processing and claiming to support "all relevant open standards" for the \gls{IoT} but still in a starting phase and lacking complete implementations of some protocols and still working on developing drivers for the most recent hardware platforms. Regarding TinyOS, it follows a less ambitious approach, presenting itself as a work scheduler with a collection of drivers for micro-controllers. Unfortunately, it appears to have stopped in time, with the latest release being dated August 2012 and not supporting the latest hardware boards. Contiki-OS on the other hand claims to be a "powerfull box for building complex wireless systems". According to the documentation it supports all the protocols required and has recently published drivers for the most recent hardware platforms. It also ships with a network simulator, allegedly allowing to construct a virtual network that accurately mimics a real deployment on hardware. The combination of these factors led to the choosing of Contiki-OS as the operative systems for our network nodes. Figure \ref{fig:stack_operative_system} acts as a reminder of the attempted protocol stack, alongside with the selected operative system.\\
+After examination of the source code repositories, wiki pages and community mailing lists, we could understand that RIOT is the newest and more ambitious, attempting real time processing and claiming to support "all relevant open standards" for the \gls{IoT} but still in a starting phase and lacking complete implementations of some protocols and still working on developing drivers for the most recent hardware platforms. Regarding TinyOS, it follows a less ambitious approach, presenting itself as a work scheduler with a collection of drivers for micro-controllers. Unfortunately, it appears to have stopped in time, with the latest release being dated August 2012 and not supporting the latest hardware boards. Contiki-OS on the other hand claims to be a "powerful box for building complex wireless systems". According to the documentation it supports all the protocols required and has recently published drivers for the most recent hardware platforms. It also ships with a network simulator, allegedly allowing to construct a virtual network that accurately mimics a real deployment on hardware. The combination of these factors led to the choosing of Contiki-OS as the operative systems for our network nodes. Figure \ref{fig:stack_operative_system} acts as a reminder of the attempted protocol stack, alongside with the selected operative system.\\
 
 \begin{figure}[h]
   \centering
@@ -130,9 +130,9 @@ With respect to the Contiki-OS internal structure, the operative system has been
 \paragraph{}
 
 Although applications should now come out-of-the-box with the selected operative system, \gls{CoAP} configuration and the creation of the application endpoints that will be accessed by the network clients on the management station needs to be done by the developer. These endpoints also increase in complexity when accessing specific hardware like humidity and temperature sensors, or when we want observable resources, where when a change occurs an event is triggered that will notify all the resource observers. In our work, we wanted to imprint on the devices an unique identifier, therefore needing to implement a simple text resource, and also make use of the hardware capabilities to create a live network, resorting to the sensors included on hardware. This implied the creation of endpoints capable of interacting with hardware devices and configuring those endpoints to be observable by the \gls{CoAP} clients. The following snippets present an overview of what is required for creating observable \gls{CoAP} endpoints.\\
-Firstly, it is necessary to declare a new resource. Since we will be creating a temperature resource, and temperatures change without human intervention, it needs to be declared as n periodic resource in order to trigger periodic temperature reading events. Besides the title, it needs a handler function that runs when the endpoint is reached by a client, and a periodic handler function that runs when a specified ammount of time is reached.
-\begin{lstlisting}
+Firstly, it is necessary to declare a new resource. Since we will be creating a temperature resource, and temperatures change without human intervention, it needs to be declared as n periodic resource in order to trigger periodic temperature reading events. Besides the title, it needs a handler function that runs when the endpoint is reached by a client, and a periodic handler function that runs when a specified amount of time is reached.
 
+\begin{lstlisting}
 PERIODIC_RESOURCE(res_temperature,
          "title=\"Temperature\";rt=\"Temperature\";obs",
          res_get_handler,
@@ -141,13 +141,11 @@ PERIODIC_RESOURCE(res_temperature,
          NULL,
          CLOCK_SECOND,
          res_periodic_handler);
-
 \end{lstlisting}
 
 The handler function is responsible for returning the most up-to-date value on the resource being requested. To do this, if first reads the latest value directly from hardware, and then construct the appropriate response using the fetched value.
 
 \begin{lstlisting}
-
 static void
 res_get_handler(void *request, void *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
@@ -159,13 +157,11 @@ res_get_handler(void *request, void *response, uint8_t *buffer, uint16_t preferr
 
   REST.set_response_payload(response, (uint8_t *)buffer, strlen((char *)buffer));
   REST.set_header_max_age(response, MAX_AGE);
-
 \end{lstlisting}
 
-The periodic handler function is responsible for monitoring the resource and if it detects changes to the value, withing a configured range, it sends messages to all the registered resource obsrvers with the most up-to-date value.
+The periodic handler function is responsible for monitoring the resource and if it detects changes to the value, within a configured range, it sends messages to all the registered resource observers with the most up-to-date value.
 
 \begin{lstlisting}
-
 static void
 res_periodic_handler()
 {
@@ -181,13 +177,11 @@ res_periodic_handler()
     REST.notify_subscribers(&res_temp);
   }
 }
-
 \end{lstlisting}
 
-Finnaly, the created resources need to be activated in the \gls{CoAP} main process so that they will become visible to clients requesting the resources that server is making available. Additionally, it is necessary to activate hardware specific components that are being used in those endpoints, in this case the temperature sensor. After these declarations are run, Contiki-OS will provide the necessary data strutures and pointers to interact with the resource and make them available for the previously seen handlers. This is one of the big advantages of working with a operative system that supports both the application layer protocols and target hardware.
+Finally, the created resources need to be activated in the \gls{CoAP} main process so that they will become visible to clients requesting the resources that server is making available. Additionally, it is necessary to activate hardware specific components that are being used in those endpoints, in this case the temperature sensor. After these declarations are run, Contiki-OS will provide the necessary data structures and pointers to interact with the resource and make them available for the previously seen handlers. This is one of the big advantages of working with a operative system that supports both the application layer protocols and target hardware.
 
 \begin{lstlisting}
-
 PROCESS_THREAD(coap_server, ev, data) s
 {
   PROCESS_BEGIN();
@@ -206,15 +200,15 @@ PROCESS_THREAD(coap_server, ev, data) s
   SENSORS_ACTIVATE(cc2538_temp_sensor);
   PROCESS_END();
 }
-
-After having a working \gls{CoAP} server, the focus moved to securing the communications at the session layer, as planned, using \gls{DTLS}. Unfortunately this goal was never achieved due to the lack of compatibility between the available \gls{DTLS} implementations, the used operative system and the selected hardware board. Although many attemps have been made, using imlementations from different sources \footnote{https://github.com/cetic/6lbr/wiki/Example-:-Dtls-Coap-Server} a running setup was never achieved. As an extreme option, moving towards another operative system (TinyOS) was attemped, and even using the "supported" \gls{DTLS} implementation from that system, it was not possible to achieve a running example since it had only been tested on old hardware and was not working with the most up-to-date boards available. After submiting bug reports and trying to get help from the community with no pratical results the usage of \gls{DTLS} was abandonned since the time required to do adapt an existing implementation to our working setup would take more time than the available to complete this project.
-
 \end{lstlisting}
+
+After having a working \gls{CoAP} server, the focus moved to securing the communications at the session layer, as planned, using \gls{DTLS}. Unfortunately this goal was never achieved due to the lack of compatibility between the available \gls{DTLS} implementations, the used operative system and the selected hardware board. Although many attempts have been made, using implementations from different sources \footnote{https://github.com/cetic/6lbr/wiki/Example-:-Dtls-Coap-Server} a running setup was never achieved. As an extreme option, moving towards another operative system (TinyOS) was attempted, and even using the "supported" \gls{DTLS} implementation from that system, it was not possible to achieve a running example since it had only been tested on old hardware and was not working with the most up-to-date boards available. After submiting bug reports and trying to get help from the community with no practical results the usage of \gls{DTLS} was abandoned since the time required to do adapt an existing implementation to our working setup would take more time than the available to complete this project.
 
 \paragraph{\textbf{Network Layer}}
 \paragraph{}
 
-Regarding the implementations at the network layer, the desired routing protocol, \gls{RPL}, should work out-of-the-box with the selected operative system and indeed it did. However some small adjustments and configurations needed to be made so that the total ammount of allocated space for routing tables could fit the target hardware. These tweaks were made in the \gls{RPL} configurations file and resourted to limiting the ammount of neighbours and max-routes per device. A maximum of twenty routes and twenty neighbours was chosen since it was far superior to the required for this project and believed to be a reasonable number for the smart campus scenario under consideration.
+Regarding the implementations at the network layer, the desired routing protocol, \gls{RPL}, should work out-of-the-box with the selected operative system and indeed it did. However some small adjustments and configurations needed to be made so that the total amount of allocated space for routing tables could fit the target hardware. These tweaks were made in the \gls{RPL} configurations file and resorted to limiting the amount of neighbours and max-routes per device. A maximum of twenty routes and twenty neighbours was chosen since it was far superior to the required for this project and believed to be a reasonable number for the smart campus scenario under consideration.
+
 \begin{lstlisting}
 
 #ifndef NBR_TABLE_CONF_MAX_NEIGHBORS
@@ -226,17 +220,58 @@ Regarding the implementations at the network layer, the desired routing protocol
 
 \end{lstlisting}
 
-Once the network layer was working and it was possible to see the topology being formed, the focus moved to enable the secure variation of the \gls{RPL} messages that would authenticate them and prevent the vampires from joining the network. Unfortunatelly, the developers of Contiki-OS when implemented the \gls{RPL} protocol for their operative system, left out the secure variations of the protocol control messages as fixed in the \gls{RPL} RFC document \footnote{https://tools.ietf.org/html/rfc6550}. Since this was a mandatory feature for the whole purpose of this work, alternatives needed to be found, and after contacting the developers behing the \gls{RPL} implementation for Contiki-OS, i was advised to use link-layer security as an alternative.\\-
-Link-layer security works by cyphering packets at the link-layer, right before leaving the host, and are then decyphered upon reaching the next device. This process repeats itself until the destination is reached. In the case of Ad-Hoc networks like this one, the proposed alternative was achievable, and an implementation of \gls{LLSEC} was already present in Contiki-OS. To make use of \gls{llsec}, a network-wide key needed to be flashed onto the hardware that would then be used for the packet chypering. More in depth, the security credential provided to the joining nodes is a 128bit key, used for the \gls{AES} \cite{Fips2001} in \gls{CCM} star mode \cite{Corp2005}. This allows packets to have their payload encrypted and the message authenticated with a \gls{MIC} also computed from the AES-128 key. This assures that all the packets flowing through the network, even the joining node first communications, are confidential and authentic therefore fulfilling the requirements for this layer.
+Once the network layer was working and it was possible to see the topology being formed, the focus moved to enable the secure variation of the \gls{RPL} messages that would authenticate them and prevent the vampires from joining the network. Unfortunately, when the developers of Contiki-OS implemented the \gls{RPL} protocol for their operative system, left out the secure variations of the protocol control messages as fixed in the \gls{RPL} RFC document \footnote{https://tools.ietf.org/html/rfc6550}. Since this was a mandatory feature for the whole purpose of this work, alternatives needed to be found, and after contacting the developers behind the \gls{RPL} implementation for Contiki-OS, i was advised to use \gls{LLSec} as an alternative.\\
+\gls{LLSec} works by cyphering packets at the link-layer, right before leaving the host. Those packets are then deciphered upon reaching the next device. This process repeats itself until the destination is reached. In the case of Ad-Hoc networks like this one, the proposed alternative was achievable, and an implementation of \gls{LLSec} was already present in Contiki-OS. To make use of \gls{LLSec}, a network-wide key needed to be flashed onto the hardware that would then be used for the packet cyphering. More in depth, the security credential provided to the joining nodes is a 128bit key, used for the \gls{AES} \cite{Fips2001} in \gls{CCM} star mode \cite{Corp2005}. This allows packets to have their payload encrypted and the message authenticated with a \gls{MIC} also computed from the AES-128 key. This assures that all the packets flowing through the network, even the joining node first communications, are confidential and authentic therefore fulfilling the requirements for this layer. Further explanations of this bootstrapping phase will be given in the Central Management Station section \ref{backend_services}.
 
 \subsection{Border Router}
 
+The border router is the network component that creates the bridge between the \gls{6LoWPAN} network and the outside world. This means that the device will need to have two interfaces, one with the 802.15.4 radio and another one to connect to the outside networks. The border router can and should be permanently connected to a power source, meaning that its power consumption is not an issue. Also, it should be more powerful than the remaining network devices because it will be in charge of taking care of all the packets going inside and outside the \gls{6LoWPAN} network. After analysing the available border router solutions, the implementation from \gls{CETIC} \footnote{https://github.com/cetic/6lbr/} was selected because it provides a deployment-ready solution that runs out-of-the-box on Linux hosts, supports various network topologies, is in active development, has releases from this year (2016) and an active community. Considering this option, the well known Raspberry Pi \footnote{https://www.raspberrypi.org/} board was selected to be the host of the \gls{CETIC} solution due to its more capable hardware, widespread use and full support from the border router distribution. Since the Raspberry platform does not possess an 802.15.4 radio interface, one of the network hardware boards was used as the radio for the border router, a solution that is also fully supported by the \gls{CETIC} distribution. Figure \ref{fig:border_router_setup} shows the border router setup used for this work and its connections to the central management station
 
-wedowepdn
-wepidnwepid
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1.0\linewidth]{figures/Border_Router.pdf}
+  \caption{Border Router Setup}
+  \label{fig:border_router_setup}
+\end{figure}
 
-\subsection{Backend Services}
+For the border router to become active, firstly a Linux distribution needs to be installed on the device. In this work, the Raspbian \footnote{https://www.raspberrypi.org/downloads/raspbian/} distro was used due to its widespread use and support. Then, \gls{CETIC}'s border router implementation needs to be installed as a service running on the Linux host. This is done by firstly installing the required dependencies, followed by compiling the sources and then starting the service.
 
+\begin{lstlisting}
+
+sudo apt-get install libncurses5-dev
+sudo apt-get install bridge-utils
+
+make all
+make plugins
+make tools
+
+sudo make install
+sudo systemctl daemon-reload
+sudo service 6lbr start
+
+\end{lstlisting}
+
+Now all that is left to do is flash the hardware board providing 802.15.4 communications. Within the sources for the border router we can find the executables for flashing this board with the slip radio firmware. This can be done with the following command:
+
+\begin{lstlisting}
+
+make TARGET=remote slip-radio.upload
+
+\end{lstlisting}
+
+In the case of plain-text communications, no additional steps were required for operation, and the border router solution should be working as the topology root and immediately adding any servers within reach to the network. However, since our solutions makes use of \gls{LLSec} it is required that the border router learns the network key. The border router will always be the destination of all packets going outside the \gls{6LoWPAN} network and the final deciphering point for the message packets. This can be done on the border router administration page as presented in Figure \ref{fig:administration_page}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/Border_Router.pdf}
+  \caption{Border Router Administration Page}
+  \label{fig:administration_page}
+\end{figure}
+
+
+
+\subsection{Central Management Station}
+\label{backend_services}
 
 wepinwe
 wepdinwepid
