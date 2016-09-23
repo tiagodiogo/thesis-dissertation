@@ -126,12 +126,11 @@ With respect to the Contiki-OS internal structure, the operative system has been
 	\item \textbf{tools} - in this folder we find non-essential apps that can help if we want for example to measure resource consumptions on real hardware.
 \end{itemize}
 
-\paragraph{\textbf{Application Layer}}
+\paragraph{\textbf{Application and Session Layer}}
 \paragraph{}
 
-Although applications should now come out-of-the-box with the selected operative system, \gls{CoAP} configuration and the creation of the application endpoints that will be accessed by the network clients on the management station needs to be done by the developer. These endpoints also increase in complexity when accessing specific hardware like humidity and temperature sensors, or when we want observable resources, where when a change occurs an event is triggered that will notify all the resource observers. In our work, we wanted to imprint on the devices an unique identifier, therefore needing to implement a simple text resource, and also make use of the hardware capabilities to create a live network, resorting to the sensors included on hardware. This implied the creation of endpoints capable of interacting with hardware devices and configuring those endpoints to be observable by the \gls{CoAP} clients. The following snippets present an overview of what is required for creating advanced \gls{CoAP} endpoints.\\
-Firstly, 
-
+Although applications should now come out-of-the-box with the selected operative system, \gls{CoAP} configuration and the creation of the application endpoints that will be accessed by the network clients on the management station needs to be done by the developer. These endpoints also increase in complexity when accessing specific hardware like humidity and temperature sensors, or when we want observable resources, where when a change occurs an event is triggered that will notify all the resource observers. In our work, we wanted to imprint on the devices an unique identifier, therefore needing to implement a simple text resource, and also make use of the hardware capabilities to create a live network, resorting to the sensors included on hardware. This implied the creation of endpoints capable of interacting with hardware devices and configuring those endpoints to be observable by the \gls{CoAP} clients. The following snippets present an overview of what is required for creating observable \gls{CoAP} endpoints.\\
+Firstly, it is necessary to declare a new resource. Since we will be creating a temperature resource, and temperatures change without human intervention, it needs to be declared as n periodic resource in order to trigger periodic temperature reading events. Besides the title, it needs a handler function that runs when the endpoint is reached by a client, and a periodic handler function that runs when a specified ammount of time is reached.
 \begin{lstlisting}
 
 PERIODIC_RESOURCE(res_temperature,
@@ -143,49 +142,92 @@ PERIODIC_RESOURCE(res_temperature,
          CLOCK_SECOND,
          res_periodic_handler);
 
+\end{lstlisting}
+
+The handler function is responsible for returning the most up-to-date value on the resource being requested. To do this, if first reads the latest value directly from hardware, and then construct the appropriate response using the fetched value.
+
+\begin{lstlisting}
+
 static void
 res_get_handler(void *request, void *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
-  /*
-   * For minimal complexity, request query and options should be ignored for GET on observable resources.
-   * Otherwise the requests must be stored with the observer list and passed by REST.notify_subscribers().
-   * This would be a TODO in the corresponding files in contiki/apps/erbium/!
-   */
 
   int temperature = temperature_sensor.value(0);
 
-  unsigned int accept = -1;
-  REST.get_header_accept(request, &accept);
+  REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
+  snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "%d", temperature);
 
-  if(accept == -1 || accept == REST.type.TEXT_PLAIN) {
-    REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
-    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "%d", temperature);
-
-    REST.set_response_payload(response, (uint8_t *)buffer, strlen((char *)buffer));
-  } else if(accept == REST.type.APPLICATION_JSON) {
-    REST.set_header_content_type(response, REST.type.APPLICATION_JSON);
-    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "{'temperature':%d}", temperature);
-
-    REST.set_response_payload(response, buffer, strlen((char *)buffer));
-  } else {
-    REST.set_response_status(response, REST.status.NOT_ACCEPTABLE);
-    const char *msg = "Supporting content-types text/plain and application/json";
-    REST.set_response_payload(response, msg, strlen(msg));
-  }
-
+  REST.set_response_payload(response, (uint8_t *)buffer, strlen((char *)buffer));
   REST.set_header_max_age(response, MAX_AGE);
 
-  /* The REST.subscription_handler() will be called for observable resources by the REST framework. */
-}
 \end{lstlisting}
 
-\paragraph{\textbf{Session Layer}}
-\paragraph{}
+The periodic handler function is responsible for monitoring the resource and if it detects changes to the value, withing a configured range, it sends messages to all the registered resource obsrvers with the most up-to-date value.
+
+\begin{lstlisting}
+
+static void
+res_periodic_handler()
+{
+  int temperature = cc2538_temp_sensor.value(1);
+
+  ++interval_counter;
+
+  if((abs(temperature - temperature_old) >= CHANGE && interval_counter >= INTERVAL_MIN) || 
+     interval_counter >= INTERVAL_MAX) {
+     interval_counter = 0;
+     temperature_old = temperature;
+    /* Notify the registered observers which will trigger the res_get_handler to create the response. */
+    REST.notify_subscribers(&res_temp);
+  }
+}
+
+\end{lstlisting}
+
+Finnaly, the created resources need to be activated in the \gls{CoAP} main process so that they will become visible to clients requesting the resources that server is making available. Additionally, it is necessary to activate hardware specific components that are being used in those endpoints, in this case the temperature sensor. After these declarations are run, Contiki-OS will provide the necessary data strutures and pointers to interact with the resource and make them available for the previously seen handlers. This is one of the big advantages of working with a operative system that supports both the application layer protocols and target hardware.
+
+\begin{lstlisting}
+
+PROCESS_THREAD(coap_server, ev, data) s
+{
+  PROCESS_BEGIN();
+
+  PROCESS_PAUSE();
+
+  /* Initialize the REST engine. */
+  rest_init_engine();
+
+  /* Initialize project specific endpoints */
+  rest_activate_resource(&res_id, "info/id");
+  rest_activate_resource(&res_event, "sensors/button");
+  rest_activate_resource(&res_temp, "sensors/temperature");
+
+  /* Initialize board specific drivers */
+  SENSORS_ACTIVATE(cc2538_temp_sensor);
+  PROCESS_END();
+}
+
+After having a working \gls{CoAP} server, the focus moved to securing the communications at the session layer, as planned, using \gls{DTLS}. Unfortunately this goal was never achieved due to the lack of compatibility between the available \gls{DTLS} implementations, the used operative system and the selected hardware board. Although many attemps have been made, using imlementations from different sources \footnote{https://github.com/cetic/6lbr/wiki/Example-:-Dtls-Coap-Server} a running setup was never achieved. As an extreme option, moving towards another operative system (TinyOS) was attemped, and even using the "supported" \gls{DTLS} implementation from that system, it was not possible to achieve a running example since it had only been tested on old hardware and was not working with the most up-to-date boards available. After submiting bug reports and trying to get help from the community with no pratical results the usage of \gls{DTLS} was abandonned since the time required to do adapt an existing implementation to our working setup would take more time than the available to complete this project.
+
+\end{lstlisting}
 
 \paragraph{\textbf{Network Layer}}
 \paragraph{}
 
+Regarding the implementations at the network layer, the desired routing protocol, \gls{RPL}, should work out-of-the-box with the selected operative system and indeed it did. However some small adjustments and configurations needed to be made so that the total ammount of allocated space for routing tables could fit the target hardware. These tweaks were made in the \gls{RPL} configurations file and resourted to limiting the ammount of neighbours and max-routes per device. A maximum of twenty routes and twenty neighbours was chosen since it was far superior to the required for this project and believed to be a reasonable number for the smart campus scenario under consideration.
+\begin{lstlisting}
 
+#ifndef NBR_TABLE_CONF_MAX_NEIGHBORS
+#define NBR_TABLE_CONF_MAX_NEIGHBORS                20
+#endif
+#ifndef UIP_CONF_MAX_ROUTES
+#define UIP_CONF_MAX_ROUTES                 20
+#endif
+
+\end{lstlisting}
+
+Once the network layer was working and it was possible to see the topology being formed, the focus moved to enable the secure variation of the \gls{RPL} messages that would authenticate them and prevent the vampires from joining the network. Unfortunatelly, the developers of Contiki-OS when implemented the \gls{RPL} protocol for their operative system, left out the secure variations of the protocol control messages as fixed in the \gls{RPL} RFC document \footnote{https://tools.ietf.org/html/rfc6550}. Since this was a mandatory feature for the whole purpose of this work, alternatives needed to be found, and after contacting the developers behing the \gls{RPL} implementation for Contiki-OS, i was advised to use link-layer security as an alternative.\\-
+Link-layer security works by cyphering packets at the link-layer, right before leaving the host, and are then decyphered upon reaching the next device. This process repeats itself until the destination is reached. In the case of Ad-Hoc networks like this one, the proposed alternative was achievable, and an implementation of \gls{LLSEC} was already present in Contiki-OS. To make use of \gls{llsec}, a network-wide key needed to be flashed onto the hardware that would then be used for the packet chypering. More in depth, the security credential provided to the joining nodes is a 128bit key, used for the \gls{AES} \cite{Fips2001} in \gls{CCM} star mode \cite{Corp2005}. This allows packets to have their payload encrypted and the message authenticated with a \gls{MIC} also computed from the AES-128 key. This assures that all the packets flowing through the network, even the joining node first communications, are confidential and authentic therefore fulfilling the requirements for this layer.
 
 \subsection{Border Router}
 
