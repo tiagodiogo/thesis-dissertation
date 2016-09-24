@@ -8,9 +8,7 @@ This ranges from the memory required for the nodes operating system and protocol
 Furthermore we evaluate our bootstrapping infrastructure by measuring the time required for uploading a firmware to the new device and the ease of use by counting the steps required for the process to take place. 
 Each following subsection both presents the collected data and explains the process and technologies involved in obtaining it.
 
-\section{Resources Measurements}
-
-\subsection{Hardware Suitability}
+\section{Hardware Suitability}
 In order to evaluate if the \gls{IoT} hardware is capable of supporting our choice for the stack of protocols security measurements it is necessary to measure the firmware size. 
 For that task, the \textit{msp430-size}\footnote{http://www.ti.com/tool/msp430-gcc-opensource} tool was used. 
 This tool analyses the firmware file and outputs the amount of \textit{text}, \textit{data} and \textit{bss}.
@@ -52,7 +50,7 @@ Texas Instruments CC2538DK& 512 & 32\\
 \hline\end{tabular}
 \end{table}
 
-\subsection{Power Consumption}
+\section{Power Consumption}
 The introduction of security mechanisms in low-power networks is necessary and desirable. However, due to the low-power characteristics of \gls{IoT} sensor and actuator networks, a substantial increase in power consumption can disrupt the network by quickly draining the available resources. 
 To this extent, a power consumption analysis was performed on our selected board in order to determine the most suitable battery powering solution following the experimental setup described in Figure \ref{fig:experimental_setup}. 
 We performed current measurements during periods of silence as well as during periods of radio activity and calculated the power consumption in Watts(W) from the Power Equation $P = I  V$, where I is the current in Amperes(A) and V is the voltage in Volts(V) as presented in Table \ref{tab:power_consumptions}.
@@ -77,7 +75,7 @@ Radio OFF& 9.0& 5.2&0.05\\
 
 Knowing that the ContikiMAC \gls{RDC} protocol enables the radio to be turned off for roughly 99\% of the time\cite{Dunkels2011}, the collected data shows that our solution maintains the low-power consumptions required for \gls{IoT} environments.
 
-\subsection{Propagation Delays}
+\section{Propagation Delays}
 The usage of an Ad-Hoc topology allows to create a network without a pre-existent infrastructure but relies on each participant node to forward data to the other elements of the network. This has impact in the time a message requires to reach its destination based on the number of hops it needs to go through. In order to measure these impacts, a study was conducted where a \gls{CoAP} Client was directly connected to the backend services in a closed room. Additionally, three \gls{CoAP} Servers were providing events to the client, routing data through each other to allow message propagation as depicted in Figure \ref{fig:message_propagation_experiment}. The experiment was conducted with a payload of 180bytes, requiring 3 packets to be sent through the network for each message. Each message was sent ten times from all the three sources. Table \ref{tab:message_propagation_results} presents the results for each server, categorizing each message group by the number of hops required for reaching its destination. The Min-Value represents the fastest message to arrive, the Max-Value represents the slowest message to arrive and the Average-Value the average of the ten attempts conducted for each server. In the case of a packet loss, each server was programmed to resend the packet up to four times, this accounts for the registered Max-Value outliers. In the case of the furtherest away server, where two hops were required for the packet to reach its destination, there were situations were even with four retransmissions the message was never successfully received by the \gls{CoAP} client. It is possible that these failures are caused by the direct exposure of the Wireless Link to a Wi-Fi Access Point located in the corridor. The impact of Wi-Fi networks is well documented in past literature \cite{Dong} and proved to cause interference and even black-out periods. We can conclude that the type of networks being used should preferably be used on locations without heavy Wi-Fi presence, but if that is not possible the network should still perform with high impacts in performance and throughput. 
 
 \begin{figure}
@@ -101,7 +99,7 @@ Number of Hops&Min-Value(s)&Max-Value(s)&Average-Value(s)\\ \hline
 
 
 
-\subsection{Bootstrapping Process}
+\section{Bootstrapping Process}
 In order to evaluate our bootstrapping process we conducted an experiment on the amount of time (in seconds) required to bootstrap a new node as an indicator of the process efficiency. The process starts with the operator connecting the new device to the bootstrapper and finishes with the operator removing the device from the bootstrapper. During the process the operator needs to open the user interface, select the appropriate device and press the upload button. In the background the system will compile the source code to match the target platform, then it will erase the previous firmware and finally upload the new one. The experiment results are presented in Table \ref{tab:bootstrapping_time}. Although the apparent bootstrapping process time is 34 seconds, the process efficiency is especially important when bootstrapping multiple devices. In this case, after the first one, the user interface and target hardware will already be open and selected and the source code will already be compiled, resulting in a real time of 12 seconds. If needed, an operator could perform up to 300 bootstrapping processes in a single hour, allowing us to conclude that our solution is practical for the presented scenario.
 
 \begin{table}
