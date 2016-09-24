@@ -259,7 +259,7 @@ make TARGET=remote slip-radio.upload
 
 \end{lstlisting}
 
-In the case of plain-text communications, no additional steps were required for operation, and the border router solution should be working as the topology root and immediately adding any servers within reach to the network. However, since our solutions makes use of \gls{LLSec} it is required that the border router learns the network key. The border router will always be the destination of all packets going outside the \gls{6LoWPAN} network and the final deciphering point for the message packets. This can be done on the border router administration page as presented in Figure \ref{fig:administration_page}
+In the case of plain-text communications, no additional steps were required for operation, and the border router solution should be working as the topology root and immediately adding any servers within reach to the network. However, since our solutions makes use of \gls{LLSec} it is required that the border router learns the network key. The border router will always be the destination of all packets going outside the \gls{6LoWPAN} network and the final deciphering point for the message packets. This can be done on the border router administration page as presented in Figure \ref{fig:administration_page}.
 
 \begin{figure}[h]
   \centering
@@ -273,9 +273,32 @@ In the case of plain-text communications, no additional steps were required for 
 \subsection{Central Management Station}
 \label{backend_services}
 
-wepinwe
-wepdinwepid
-\section{Execution}
+The central management station is in charge of fetching the most up-to-date values of the network devices, storing them and allowing access to outside client. Although without the usage of \gls{DTLS} some of the station components are now more simple, there is still an important collection of previously presented pieces that come into play. The following paragraphs show how they were implemented and their role in the station. For simplicity and easier setup, all the pieces of the management station were deployed on a single machine, however in real application they could be divided into separate physical machines for improved performance.
+
+\paragraph{\textbf{Data Server and Key Store}}
+\paragraph{}
+The role of the Data Server is to store the latest values received by the \gls{CoAP} Client and provide them on demand to the outside network clients. It was implemented resourting to two pieces, a database and a webserver. The selected webserver is the well known Apache \footnote{https://httpd.apache.org/} due to the extensive ammount of documentation and previous experience with this server. It is important to state that other from installing the service from the Linux distribution repositories, a certificate should be used to ensure the safety of communications between the network clients and the central management station. For the purposes of this work, and since all is to be demonstrated locally, this certificate was not requested or put in production. The webpage being served by the Apache server is used for the bootstrapping process and to monitor the network status and latest values. Screenshots of this webpage are provided on the System Execution section \ref{sec:system_execution}.\\
+Regarding the database, a Mysql \footnote{https://www.mysql.com/} instance was used, once again due to the extensive ammount of doumentation and previous experience. Since there is not the need to store public/private keys, the network-wide key used for the \gls{LLSec} was directly stored and access on this same database. The database hold the following information:
+
+\begin{itemize}
+  \item \textbf{Authorized Nodes} - the nodes that are authorized to belong to the network. Holds information about there unique identifier, name, type, zone and IP address;
+  \item \textbf{Network Keys} - the keys used for the \gls{LLSec}. Holds information about the current key. Is updated in the administration console and is fetched when a new node goes through the bootstrapping process;
+  \item \textbf{Node Resources} - the resources each network nodes has endpoints to. Holds information about their type, endpoint and latest value. Is updated by the \gls{CoAP} client and is fetched by the network clients;
+  \item \textbf{Supported Hardware} - the boards that are supported by the bootstrapper. Holds informations about their name and type and is used during the bootstrapping phase to flash new devices appropriately.
+\end{itemize}
+
+
+\paragraph{\textbf{CoAP Client Observer}}
+\paragraph{}
+
+Regarding the implementations at the network layer, the desired routing protocol, \gls{RPL}, should work out-of-the-box with the selected operative system and indeed it did. However some small adjustments and configurations needed to be made so that the total amount of allocated space for routing tables could fit the target hardware. These tweaks were made in the \gls{RPL} configurations file and resorted to limiting the amount of neighbours and max-routes per device. A maximum of twenty routes and twenty neighbours was chosen since it was far superior to the required for this project and believed to be a reasonable number for the smart campus scenario under consideration.
+
+\paragraph{\textbf{Bootstraper}}
+\paragraph{}
+
+
+\section{System Execution}
+\label{sec:system_execution}
 
 weojndweod
 wepidnweoid
