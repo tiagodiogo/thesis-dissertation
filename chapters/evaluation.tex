@@ -118,3 +118,7 @@ Remove New Device&2\\
 \hline\end{tabular}
 \end{table}
 
+\section{Limitations}
+During the development of this solution, and mainly due to compatibility issues, some limitations were raised. The most flagrant is the possibility of compromising a network node and sniffing the contents of the propagated packets. Although we are using \gls{LLSec} and this assures confidentiality, integrity, authenticity of the propagated packets while also providing authentication of the network nodes, in the event of compromising an already deployed node, the messages are cyphered and deciphered on every device, exposing the payload to the attackers. In the future a solution that protects the packets from the source all the way to the destination needs to be addressed so that the solutions can be totality secure against privacy attacks.
+
+
