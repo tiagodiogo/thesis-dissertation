@@ -3,39 +3,31 @@
 \chapter{Introduction}
 \label{chapter:introduction}
 
-\cite{Trappe2015}
-The Internet of Things \gls{IoT} can be seen as a web of interconnected devices that go from everyday wearable objects into fully deployed sensor networks. Despite the huge variety and characteristics of these devices, one thing that they all have in common is the constrained nature that they are built upon. In order to enable the massive deployment to be expected in the near future,\footnote{http://blogs.wsj.com/cio/2015/06/02/internet-of-things-market-to-reach-1-7-trillion-by-2020-idc/} \gls{IoT} devices must be accessible and affordable, capable of operating under lossy wireless networks while being battery powered. Chapter \ref{sec:network_overview} presents an overview of the type of networks and scenarios under consideration.
-
-	This poses a challenge to current Internet protocols since the assumptions regarding the devices' capabilities and objectives do not hold true. To allow the \gls{IoT} vision to come forward, several new protocols have been developed across the OSI layers, each addressing and tackling the challenges involved in trying to keep the quality and assurances of stronger, more expensive protocols, on constrained systems. After being thoroughly analysed in Section \ref{sec:protocol_analysis}, these protocols have been selected and grouped in a power-efficient stack, establishing a base line for power consumption. 
-	
-	Since \gls{IoT} environments can range from home to enterprise or even city environments, a breach in security could potentially leak important company activity or provide information about individuals' choices and whereabouts constituting a violation of privacy \cite{Ukil2015}. To this extent, a study on existing attacks for constrained devices was conducted on Section \ref{sec:attack_analysis} and a common mitigation strategy further examined in Section \ref{sec:secure_bootstrapping}. This strategy provided security assurances at the cost of an increased infrastructure complexity capable of managing the network devices and security credentials. This managing solution -- AutoStrap -- derived its name from the necessity of a simple, automated solution and is presented in Chapter \ref{chapter:proposed_solution} on a SmartCampus scenario. 
-	
-	In order to accurately define the type and amount of resources needed to create such a network, we deployed our protocol stack and management station of physical hardware and performed energy, space and time profiling as presented in Chapter \ref{chapter:evaluation}. Finally, Chapter \ref{chapter:conclusion} states our conclusions and opportunities for future work.
-	
-	
-There are many applicability domains and different methods for creating \gls{IoT} networks.
-Some provide direct connectivity of nodes to the Internet while others provide a common gateway for interfacing with external networks. This main difference has profound implications on the type of devices and protocols used for communication. In the following paragraphs a short overview of these two types of architectures is presented.
-
-\section{Large Area Networks}
-
-\begin{figure}[h]
+The Internet of Things (\gls{IoT}) can be seen as a web of interconnected devices that go from everyday wearable objects into fully deployed sensor networks over a variety of architectures. Some of them provide direct connectivity of nodes to the Internet while others provide a common gateway for interfacing with external networks. In the first type of architectures (Figure \ref{fig:net_overview_large}) the network nodes transmit sensing information to global access points without requiring inter-devices communication. The access point can range from routers, to GSM towers of even satellites. The outgoing messages and then transmitted through the Internet to external data processing facilities, where large amounts of data from many sources are converted into useful information on demand. This information can then be access by the users from outside the site, also through the Internet. This type of deployments could be used, for example, in Smart Cities, where there is the need to cover a large area with sensors. In the second type of architectures (Figure  \ref{fig:net_overview_small}) the sensing or actuating nodes belong to a very constrained network with specific protocols and hardware restrictions, requiring an interface device -- the border router -- in order to communicate with external networks. After reaching the external network, incoming messages are processed to convert sensor data into useful information which is then stored or used to trigger events. This information can then be accessed by users either on the same network or by making requests through the Internet. This type of deployment could be used, for example, in a home intrusion system where the network nodes would create a sensor network that propagates events in the case of an intrusion and the additional infrastructure would be in charge of receiving these events and notifying the police authorities.
+\begin{figure}
   \centering
   \includegraphics[width=0.85\linewidth]{figures/Network_Overview_Sparse.pdf}
   \caption{IoT Large Area Network Overview.}
   \label{fig:net_overview_large}
 \end{figure}
-
-In this type of architectures, the network nodes transmit sensing information to global access points without requiring inter-devices communication. The access point can range from routers, to GSM towers of even satellites. The outgoing messages and then transmitted through the Internet to external data processing facilities, where large amounts of data from many sources are converted into useful information on demand. This information can then be access by the users from outside the site, also through the Internet.
-This type of deployments could be used, for example, in Smart Cities, where there is the need to cover a large area with sensors. A typical scenario would be to collect information on the city garbage bins to make dynamic collection routes based on the status of the recipient.
-  
-\section{Personal Area Networks}
-
-\begin{figure}[h]
+\begin{figure}
   \centering
   \includegraphics[width=0.8\linewidth]{figures/Network_Overview.pdf}
   \caption{IoT Personal Area Network Overview.}
   \label{fig:net_overview_small}
 \end{figure}
+Despite the huge variety and characteristics of these devices, one thing that they all have in common is the constrained nature that they are built upon. In order to enable the massive deployment to be expected in the near future,\footnote{http://blogs.wsj.com/cio/2015/06/02/internet-of-things-market-to-reach-1-7-trillion-by-2020-idc/} \gls{IoT} devices must be accessible and affordable, capable of operating under lossy wireless networks while being battery powered. This poses a challenge to current Internet protocols since the assumptions regarding the devices' capabilities and objectives do not hold true \cite{Trappe2015} and also raises the question: how to secure communications amongst \gls{IoT} constrained networks and devices? To allow the \gls{IoT} vision to come forward, several new protocols have been developed across the OSI layers, each addressing and tackling the challenges involved in trying to keep the quality and assurances of stronger, more expensive protocols, on constrained systems. In our work we do a thorough analysis of the state of the art to select the most efficient ones and group them in a power-efficient stack. Also, knowing that \gls{IoT} environments can range from home to enterprise or even city environments, a breach in security could potentially leak important company activity or provide information about individuals' choices and whereabouts constituting a violation of privacy \cite{Ukil2015}. To this extent, a study on existing attacks for constrained devices was conducted and available mitigation strategies investigated so that the communication model of this work could be not only efficient but also secure against power-draining attacks. From this investigation a common mitigations that provides security assurances at the cost of an increased infrastructure complexity capable of managing the network devices and security credentials arose. This managing solution -- AutoStrap -- derived its name from the necessity of a simple and automated solution. In order to accurately define the type and amount of resources needed to create such a network, we deployed our protocol stack and management station of physical hardware and performed energy, space and time profiling as presented in Chapter \ref{chapter:evaluation}. Finally, Chapter \ref{chapter:conclusion} states our conclusions and opportunities for future work.
+	
+	
+There are many applicability domains and different methods for creating \gls{IoT} networks.
+Some provide direct connectivity of nodes to the Internet while others provide a common gateway for interfacing with external networks. This main difference has profound implications on the type of devices and protocols used for communication. In the following paragraphs a short overview of these two types of architectures is presented.
+
+
+
+In this type of architectures, the network nodes transmit sensing information to global access points without requiring inter-devices communication. The access point can range from routers, to GSM towers of even satellites. The outgoing messages and then transmitted through the Internet to external data processing facilities, where large amounts of data from many sources are converted into useful information on demand. This information can then be access by the users from outside the site, also through the Internet.
+This type of deployments could be used, for example, in Smart Cities, where there is the need to cover a large area with sensors. A typical scenario would be to collect information on the city garbage bins to make dynamic collection routes based on the status of the recipient.
+  
+
 
 In this type of architectures, the sensing or actuating nodes belong to a very constrained network with specific protocols and header compression mechanisms, requiring an interface device -- the border router -- in order to communicate with external networks.
 After reaching the external network, incoming messages are processed to convert sensor data into useful information which is then stored or used to trigger events. 
