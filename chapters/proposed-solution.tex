@@ -133,7 +133,7 @@ With respect to the Contiki-OS internal structure, the operative system has been
 Although applications should now come out-of-the-box with the selected operative system, \gls{CoAP} configuration and the creation of the application endpoints that will be accessed by the network clients on the management station needs to be done by the developer. These endpoints also increase in complexity when accessing specific hardware like humidity and temperature sensors, or when we want observable resources, where when a change occurs an event is triggered that will notify all the resource observers. In our work, we wanted to imprint on the devices an unique identifier, therefore needing to implement a simple text resource, and also make use of the hardware capabilities to create a live network, resorting to the sensors included on hardware. This implied the creation of endpoints capable of interacting with hardware devices and configuring those endpoints to be observable by the \gls{CoAP} clients. The following snippets present an overview of what is required for creating observable \gls{CoAP} endpoints.\\
 Firstly, it is necessary to declare a new resource. Since we will be creating a temperature resource, and temperatures change without human intervention, it needs to be declared as n periodic resource in order to trigger periodic temperature reading events. Besides the title, it needs a handler function that runs when the endpoint is reached by a client, and a periodic handler function that runs when a specified amount of time is reached.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={CoAP Periodic Resource Declaration}]
 PERIODIC_RESOURCE(res_temperature,
          "title=\"Temperature\";rt=\"Temperature\";obs",
          res_get_handler,
@@ -146,7 +146,7 @@ PERIODIC_RESOURCE(res_temperature,
 
 The handler function is responsible for returning the most up-to-date value on the resource being requested. To do this, if first reads the latest value directly from hardware, and then construct the appropriate response using the fetched value.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={CoAP Periodic Resource Handler}]
 static void
 res_get_handler(void *request, void *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
@@ -162,7 +162,7 @@ res_get_handler(void *request, void *response, uint8_t *buffer, uint16_t preferr
 
 The periodic handler function is responsible for monitoring the resource and if it detects changes to the value, within a configured range, it sends messages to all the registered resource observers with the most up-to-date value.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={CoAP Periodic Resource Periodic Handler}]
 static void
 res_periodic_handler()
 {
@@ -182,7 +182,7 @@ res_periodic_handler()
 
 Finally, the created resources need to be activated in the \gls{CoAP} main process so that they will become visible to clients requesting the resources that server is making available. Additionally, it is necessary to activate hardware specific components that are being used in those endpoints, in this case the temperature sensor. After these declarations are run, Contiki-OS will provide the necessary data structures and pointers to interact with the resource and make them available for the previously seen handlers. This is one of the big advantages of working with a operative system that supports both the application layer protocols and target hardware.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={CoAP Resources Activation}]
 PROCESS_THREAD(coap_server, ev, data) s
 {
   PROCESS_BEGIN();
@@ -210,7 +210,7 @@ After having a working \gls{CoAP} server, the focus moved to securing the commun
 
 Regarding the implementations at the network layer, the desired routing protocol, \gls{RPL}, should work out-of-the-box with the selected operative system and indeed it did. However some small adjustments and configurations needed to be made so that the total amount of allocated space for routing tables could fit the target hardware. These tweaks were made in the \gls{RPL} configurations file and resorted to limiting the amount of neighbours and max-routes per device. A maximum of twenty routes and twenty neighbours was chosen since it was far superior to the required for this project and believed to be a reasonable number for the smart campus scenario under consideration.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={RPL Configurations}]
 
 #ifndef NBR_TABLE_CONF_MAX_NEIGHBORS
 #define NBR_TABLE_CONF_MAX_NEIGHBORS                20
@@ -237,7 +237,7 @@ The border router is the network component that creates the bridge between the \
 
 For the border router to become active, firstly a Linux distribution needs to be installed on the device. In this work, the Raspbian \footnote{https://www.raspberrypi.org/downloads/raspbian/} distro was used due to its widespread use and support. Then, \gls{CETIC}'s border router implementation needs to be installed as a service running on the Linux host. This is done by firstly installing the required dependencies, followed by compiling the sources and then starting the service.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={Border Router Dependencies and Installation}]
 
 sudo apt-get install libncurses5-dev
 sudo apt-get install bridge-utils
@@ -254,7 +254,7 @@ sudo service 6lbr start
 
 Now all that is left to do is flash the hardware board providing 802.15.4 communications. Within the sources for the border router we can find the executables for flashing this board with the slip radio firmware. This can be done with the following command:
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={Firmware Upload Command}]
 
 make TARGET=remote slip-radio.upload
 
@@ -292,7 +292,7 @@ Regarding the database, a Mysql \footnote{https://www.mysql.com/} instance was u
 
 The client observer plays a very important role in the network because is in charge of discovering the \gls{CoAP} servers, contacting them and fetching the most up-to-date values from them. This process was implemented in three steps. Firstly, the process needs to discover the active servers on the network. It does this by parsing the border router administration page looking for the devices in the topology and their address on the \gls{6LoWPAN} network. To facilitate the web crawling part JSoup \footnote{https://jsoup.org/} was used. After learning about the active servers, the process creates \gls{CoAP} client objects so that their endpoints can be reached. The client objects belong to the Californium Framework \footnote{http://www.eclipse.org/californium/} being used on the Java project.  
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={CoAP Client Device Discovery}]
 
 public static List<String> parse (String url) throws IOException{
 		
@@ -331,7 +331,7 @@ private void processBorderRouter() throws IOException, NumberFormatException, SQ
 
 Secondly, the process needs to request the discovered servers their available resources and register the created \gls{CoAP} clients on their endpoints. Thirdly, a handler functions needs to be created so that when new values are received the database gets updated. In the following snippet, the handler code for a temperature update is shown. 
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={CoAP Client Resource Handling}]
 
 CoapClient tempObserver = new CoapClient(PROTOCOL, "["+node.getIp()+"]", PORT, "sensors", "temperature");
 				CoapObserveRelation tempRelation = tempObserver.observe(
@@ -376,7 +376,7 @@ This process keeps running in the background fetching new servers and updating d
 
 The bootstraper is the central management station that directly interfaces with the hardware boards and attempts to facilitate the installation of new devices. It provides a USB interface for the new device to be physically connected during the flashing and uses the web server pages for guiding the user during the firmware upload. After the device is connected, the bootstrapper will require the user to select the target hardware and a name for the device. Then it will create new entries in the database for the new device and proceed to compile a \gls{CoAP} server. Finally it will fetch the network key to be used on the \gls{LLSec} and flash it alongside with the Contiki-OS firmware. The script that runs in the background is the following:
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={Bootstrapper Credentials Flashing Script}]
 
 $llsec = str_split(getKeys()[0], 2);
   $formated_llsec = "#define NONCORESEC_CONF_KEY {";
