@@ -3,6 +3,9 @@
 \chapter{Related Work}
 \label{chapter:related_work}
 
+\paragraph{}
+To better understand the state of the art in this field of research our work starts by showcasing the available protocols for \gls{IoT} communications on the several OSI layers in Section \ref{sec:protocol_analysis} giving an overview of the strong and weak points of each alternative which influenced the stack selection. This overview is followed by the investigation on the battery-draining attacks specially designed to target devices with low resources in Section \ref{sec:attack_analysis} further promoting the need for a secure communications model. For achieving such objective, a mitigation strategy known as secure bootstrapping is presented in \ref{sec:secure_bootstrapping} that focuses on proving the network devices all the security credentials required for operation.
+
 \section{Protocol Analysis and Selection}
 \label{sec:protocol_analysis}
 
@@ -40,7 +43,7 @@ With the use of 6LoWPAN, upper layer routing protocols can now use the IPv6 addr
 
 \begin{figure}[h!]
   \centering
-  \includegraphics[width=1.0\linewidth]{figures/RPL_DODAG.pdf}
+  \includegraphics[width=0.9\linewidth]{figures/RPL_DODAG.pdf}
   \caption{A Sample RPL DODAG.}
   \label{fig:rpl_dodag}
 \end{figure}
@@ -275,4 +278,4 @@ So far, excluding the identifier based access control list, the intent of the st
 \paragraph{}
 Secure bootstrapping and network admission solutions have already been proposed in past literature. However, the development and optimization of application layer protocols as well as network layer routing schemes allows for new approaches and solutions that can now fit the nature of \gls{IoT} devices.
 Bergman et al. \cite{Bergmann2012} proposed a three-phase secure bootstrapping technique for nodes in a \gls{CoAP} network. Firstly the joining node broadcasts a request for a \gls{CSDS}. This server, once contacted by a new node takes the responsibility of key distribution. Then the system goes under a vulnerable phase where the secret is transmitted from the \gls{CSDS} onto the new device. The author's proposes a short audible or visual feedback to the human installer when the secret is received and assumes that potential eavesdroppers can not intercept this transmission. Finally, this secret is used to setup the \gls{DTLS} connection. This approach has major security drawbacks. On the secret transmission phase, so the authors propose limiting the radio power to a low level and disable data forwarding beyond the local network segment, but these techniques cannot assure that an attacker won't be able to intercept the transmission.\\
-Oliveira et al. \cite{Oliveira2013} proposed an admission control solution for 6LoWPAN networks based on administrative approval. Each joining node would broadcast its presence to the network, and that broadcast would be received by the administrator in the management server. Then, the administrator would grant access to that new device based on its address, and that information would be transmitted to all the devices in the network. After this phase, the device would be allowed communication as a regular member of the network by its neighbours. This approach has the advantage of requiring no previous setup on the device before operation but is vulnerable to the attacks previously mentioned in identifier based \gls{ACL}. The authors state that work still needs to be performed in order to validate the sensor identity and leave as possibility the pre-instalment of keys on the device. 
+Oliveira et al. \cite{Oliveira2013} proposed an admission control solution for 6LoWPAN networks based on administrative approval. Each joining node would broadcast its presence to the network, and that broadcast would be received by the administrator in the management server. Then, the administrator would grant access to that new device based on its address, and that information would be transmitted to all the devices in the network. After this phase, the device would be allowed communication as a regular member of the network by its neighbours. This approach has the advantage of requiring no previous setup on the device before operation but is vulnerable to the attacks previously mentioned in identifier based \gls{ACL}. The authors state that work still needs to be performed in order to validate the sensor identity and leave as possibility the pre-instalment of keys on the device.

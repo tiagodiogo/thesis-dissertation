@@ -1,13 +1,11 @@
 %TEX root = ../dissertation.tex
 
-\chapter{Proposed Solution}
+\chapter{Solution}
 \label{chapter:proposed_solution}
 
-Before attempting to develop a protocol, or solution, that meets our goals and properly addresses the problems and attacks described in the previous chapters, it is important to define the scope of our work. A common appropriate way to do so is by presenting both a scenario and architecture of the solution. The Internet of Things is currently a hot trend and this work could potentially apply and benefit a wide spectrum of applications, ranging from home environments to large enterprise networks. However, these are domains that have different requirements. A home application should be easy to setup and not require complex configurations to the user. An enterprise solution can benefit from additional administrative configurations as long as the deployment of the devices can be done quickly and easily due to their potential large number. Our work will position itself in the middle of these two domains. We are looking at a complexity and number of devices greater than a home environment but it is not our focus to provide solutions for enterprise networks and their deployment restrictions. It is our belief that a Smart University Campus is an adequate scenario and can effectively demonstrate the needs targeted by our work. In the following sections we will apply the information gathered in the related work sections to formally define what we are trying to achieve, what are the difficulties in achieving those goals and how can we overcome them. Then, a model of a campus with the proposed energy-efficient network architecture will be presented and their component roles explained. 
+Before attempting to develop a protocol, or solution, that meets our goals and properly addresses the problems and attacks described in the previous chapters, it is important to define the scope of our work.\\ A common appropriate way to do so is by presenting both a scenario and architecture of the solution. The Internet of Things is currently a hot trend and this work could potentially apply and benefit a wide spectrum of applications, ranging from home environments to large enterprise networks. However, these are domains that have different requirements. A home application should be easy to setup and not require complex configurations to the user. An enterprise solution can benefit from additional administrative configurations as long as the deployment of the devices can be done quickly and easily due to their potential large number. Our work will position itself in the middle of these two domains. We are looking at a complexity and number of devices greater than a home environment but it is not our focus to provide solutions for enterprise networks and their deployment restrictions. It is our belief that a Smart University Campus is an adequate scenario because it is a known environment, open to innovation and with multiple buildings, each with its connection needs. These characteristics make it a privileged scenario to effectively demonstrate the needs targeted by our work. In the following sections we will apply the information gathered in the related work sections to formally define what we are trying to achieve, what are the difficulties in achieving those goals and how can we overcome them. Then, a model of a campus with the proposed energy-efficient network architecture will be presented and their component roles explained. 
 
-\section{Planning}
-
-\subsection{Objectives and Requirements}
+\section{Objectives and Requirements}
 \paragraph{}
 One of the major concerns regarding \gls{IoT} application is the communication model. For our work, we pose as requirement that the system is power-aware and uses the minimum energy possible. Additionally, the following set of objectives is desirable to build trust and allow secure communications to take place.
 
@@ -17,7 +15,7 @@ One of the major concerns regarding \gls{IoT} application is the communication m
 	\item Authentication: The studied type of networks relies on hop-to-hop communication, meaning several nodes will take place in forwarding a packet. If they are not authenticated they could perform a wide range of attacks and disrupt the network.
 \end{itemize}
 
-\subsection{System Architecture and Message Flow}
+\section{System Architecture and Message Flow}
 \paragraph{}
 
 As stated in the beginning of the chapter, we will use a Smart Campus scenario. Being aware of the technological improvements on sensor networks and building management technologies, the \gls{IST} administration decided to improve the monitoring the overall conditions of the buildings and inside environments in order to better preserve its assets. To cope with the new requirements, we propose a solution for the monitoring of the campus sections by deploying a wireless sensor network on each building, connected to a central management station operated by the available staff. The scenario will be based on the \gls{IST} campus model. An overview of the system and its components over the \gls{IST} blueprints can be found in Figure \ref{fig:global_architecture}. Regarding each individual component:
@@ -26,8 +24,10 @@ As stated in the beginning of the chapter, we will use a Smart Campus scenario. 
 	\item Numeric Nodes: Represent the network sensor nodes, the most constrained element of the network. They cooperate to build the topology and route messages hop-by-hop until the root is reached. These are fully equipped with the energy efficient protocol stack defined in Section 4.1\\
 	\item Alphabetical Nodes: Represent the root node of each section network topology. They are equipped with the same stack of the numbered nodes but are more powerful, preferentially not battery powered and act as the bridge between the constrained 6LoWPAN environment and the central management station. These nodes must be more powerful than the numeric ones so that they can process all the requests between a group of sensors and the management station. Also, although the numeric nodes use low-power wireless radios, the alphabetical nodes must be capable of interfacing with more power hungry radios and protocols therefore requiring more resources. This differentiation allows numeric nodes (the large portion of the network devices) to keep their very constrained nature, consuming less energy, an still be able to communicate with external devices.\\
 	\item Management Station: A black box model of the core components of the system. Each building reports to the central station and the staff monitors the status through it. A white box model will be shown in the following sections.\\
-	\item Client: The system's clients can be any user with access credentials, but mostly the staff members. They can access the management station either from within the local network or from outside through the Internet.\\
+	\item Client: The system's clients can be any user with access credentials, but mostly the staff members. They can access the management station either from within the local network or from outside through the Internet.
 \end{itemize}
+
+\vspace{25mm} %5mm vertical space 
  
 \begin{figure}[h]
   \centering
@@ -60,7 +60,6 @@ Although each user could access the system through a \gls{CoAP} terminal and req
 
 \paragraph{\textbf{Credentials Configuration}}
 \paragraph{}
-
 In order to achieve secure communications, the new node must connect to the RPL network in a secure way, that is by using a pre-shared group key. After that network setup, it will also need to make a DTLS handshake with the client observer, for that needing a key pair and the public key of the client observer. That information is written into the device during the configuration phase, done by the staff members. Figure \ref{fig:sequence_bootstrapping} shows a sequence diagram of the initial configuration phase. This process will be fully automated without requiring the staff administrator any knowledge of the inner workings of the network and authentication procedures.
 
 \begin{figure}[h]
@@ -79,12 +78,14 @@ After the credentials configuration phase, the new device is fully equipped with
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.95\linewidth]{figures/Sequence_Network_Admission.pdf}
+  \includegraphics[width=1.0\linewidth]{figures/Sequence_Network_Admission.pdf}
   \caption{Network Layer Bootstrapping}
   \label{fig:sequence_network_admission}
 \end{figure}
 
 As shown in the sequence diagram, the process is initiated by the joining device by broadcasting \gls{DAO} messages to any available neighbour devices in range. The receiving nodes will reply to the new device with a \gls{DIO} message that provides graph routing information. With this information the new device is able to compute its rank (the distance towards the root) and define its parents based on that metric. After that process is complete, the new device tells his neighbours about its position in the graph using a \gls{DIO} message and the receiving nodes update their routing tables so that downwards traffic can now reach the new node. This information is further propagated up the network topology until the root is reached.
+
+\vspace{20mm} %5mm vertical space
 
 \paragraph{\textbf{Application Layer Bootstrapping}}
 \paragraph{}
