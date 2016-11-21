@@ -4,13 +4,13 @@
 \label{chapter:related_work}
 
 \paragraph{}
-To better understand the state of the art in this field of research our work starts by showcasing the available protocols for \gls{IoT} communications on the several OSI layers in Section \ref{sec:protocol_analysis} giving an overview of the strong and weak points of each alternative which influenced the stack selection. This overview is followed by the investigation on the battery-draining attacks specially designed to target devices with low resources in Section \ref{sec:attack_analysis} further promoting the need for a secure communications model. For achieving such objective, a mitigation strategy known as secure bootstrapping is presented in \ref{sec:secure_bootstrapping} that focuses on proving the network devices all the security credentials required for operation.
+To better understand the state of the art in this field of research our work starts by showcasing the available protocols for \gls{IoT} communications on the several \gls{OSI} layers in Section \ref{sec:protocol_analysis} giving an overview of the strong and weak points of each alternative which influenced the stack selection. This overview is followed by the investigation on the battery-draining attacks specially designed to target devices with low resources in Section \ref{sec:attack_analysis} further promoting the need for a secure communications model. For achieving such objective, a mitigation strategy known as secure bootstrapping is presented in \ref{sec:secure_bootstrapping} that focuses on proving the network devices all the security credentials required for operation.
 
 \section{Protocol Analysis and Selection}
 \label{sec:protocol_analysis}
 
 \paragraph{}
-There are many alternatives and some proposed standards when it comes to choosing a protocol stack for \gls{IoT} communications. The decision must be based on the particularities of the devices to be used and the objective of the application itself, however a thorough analysis of the existing solutions is a proper way to unveil the strong and weak points of each protocol providing a good basis for an informed decision. A recent survey (January 2015) \cite{Al-Fuqaha2015} of \gls{IoT} enabling technologies, protocols and applications was the starting point for the analysis to follow. The presentation of the available protocols and solutions will follow a bottom-up approach, starting from the data link and physical layer all the way up until the application layer. In particular, the session layer will be left to the end since securing the channel is an optional feature and will be addressed after the application level protocols are properly examined.
+There are many alternatives and some proposed standards when it comes to choosing a protocol stack for \gls{IoT} communications. The decision must be based on the particularities of the devices to be used and the objective of the application itself, however a thorough analysis of the existing solutions is a proper way to unveil the strong and weak points of each protocol providing a good basis for an informed decision. A recent survey (January 2015) \cite{Al-Fuqaha2015} of \gls{IoT} enabling technologies, protocols and applications was the starting point for the analysis to follow. The presentation of the available protocols and solutions will follow a bottom-up approach, starting from the data link and physical layer all the way up to the application layer. In particular, the session layer will be left to the end since securing the channel is an optional feature and will be addressed after the application level protocols are properly examined.
 
 \subsection{Data Link and Physical Layer}
 
@@ -111,7 +111,7 @@ So far, security issues have not been addressed in any of the previous layers. T
 \end{itemize}
 
 \paragraph{}
-	A final overview of the analysed protocols and security solutions is given in Table \ref{tab:protocols}. And a comparison of the protocol stack is shown in Table \ref{tab:stack}. 
+	A final overview of the analysed protocols and security solutions is given in Table \ref{tab:protocols} and a comparison of the protocol stack is shown in Table \ref{tab:stack}. 
 
 \begin{table}[h]
 	\centering
@@ -198,7 +198,7 @@ In systems that use this type of routing protocols, network nodes are aware of t
 
 \paragraph{\textbf{Directional Antenna Attack}}
 \paragraph{}
-In this attack, the attacker takes the role of an intermediary and not the source of a packet. If the attacker has the resources to use a directional antenna, it can deposit a packet on arbitrary parts of the network while also forwarding the packet locally. This causes nodes that were not on the optimal path to also consume energy by forwarding a packet they would not normally receive, therefore increasing the total energy consumption by a factor of the directions the attacker can position the antenna and the distance between the receiver and the sink. Figure \ref{fig:directional_antenna_attack} shows an example where a ``vampire'' intermediary deposited a node on a distant location of the network, causing the packet to follow two different routes towards its destination
+In this attack, the attacker takes the role of an intermediary and not the source of a packet. If the attacker has the resources to use a directional antenna, it can deposit a packet on arbitrary parts of the network while also forwarding the packet locally. This causes nodes that were not on the optimal path to also consume energy by forwarding a packet they would not normally receive, therefore increasing the total energy consumption by a factor of the directions the attacker can position the antenna and the distance between the receiver and the sink. Figure \ref{fig:directional_antenna_attack} shows an example where a ``vampire'' intermediary deposited a node on a distant location of the network, causing the packet to follow two different routes towards its destination.
 
 \begin{figure}[h]
   \centering
